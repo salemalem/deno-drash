@@ -63,4 +63,9 @@ export type {
 
 export { BumperService } from "https://raw.githubusercontent.com/drashland/services/v0.0.1/ci/bumper_service.ts";
 
-export { LoggerService } from "https://raw.githubusercontent.com/drashland/services/v0.0.1/logger/logger_service.ts";
+import { LoggerService } from "https://raw.githubusercontent.com/drashland/services/v0.0.1/logger/logger_service.ts";
+export { LoggerService };
+
+export function deprecate(message: string): void {
+  LoggerService.logWarn("DEPRECATED CODE DETECTED\n" + message);
+}

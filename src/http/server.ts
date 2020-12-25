@@ -5,6 +5,7 @@ import {
   IndexService,
   ISearchResult,
   LoggerService,
+  deprecate,
   serve,
   Server as DenoServer,
   ServerRequest,
@@ -640,6 +641,20 @@ export class Server {
   protected addStaticPaths(): void {
     const paths = this.configs.static_paths;
 
+    if (!paths) {
+      return;
+    }
+
+    deprecate(`
+The \`static_paths\` config is deprecated and will be removed on March 1, 2021.
+Please update your application to use the following:
+    StaticPaths - A static paths middleware
+View migration guide at:
+    https://github.com/drashland/deno-drash-middleware/tree/master/serve_virtual_paths
+View more information regarding this deprecation/removal at:
+    https://github.com/drashland/deno-drash/issues/454
+`);
+
     if (paths) {
       if (!this.configs.directory) {
         throw new Drash.Exceptions.ConfigsException(
@@ -688,13 +703,14 @@ export class Server {
       return;
     }
 
-    LoggerService.logWarn(`DEPRECATED CODE DETECTED
-"The \`server.template_engine\` config is deprecated and will be removed on January 1, 2021.
-Please update your application to use Tengine -- a template engine middleware.
+    deprecate(`
+The \`server.template_engine\` config is deprecated and will be removed on January 1, 2021.
+Please update your application to use the following:
+    Tengine - A template engine middleware
 View migration guide at:
-https://github.com/drashland/deno-drash-middleware/tree/master/tengine.
+    https://github.com/drashland/deno-drash-middleware/tree/master/tengine
 View more information regarding this deprecation/removal at:
-https://github.com/drashland/deno-drash/issues/430 for more information regarding this deprecation/removal.
+    https://github.com/drashland/deno-drash/issues/430
 `);
     if (!this.configs.views_path) {
       throw new Drash.Exceptions.ConfigsException(
