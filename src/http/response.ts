@@ -76,14 +76,11 @@ export class Response {
    * Construct an object of this class.
    *
    * @param request - Contains the request object
-   *
-   * @param options - The response options
    */
-  constructor(request: Drash.Http.Request, options: IOptions = {}) {
-    this.options = options;
+  constructor(request: Drash.Http.Request) {
     this.request = request;
     this.headers = new Headers();
-    this.headers.set("Content-Type", this.getContentType());
+    this.headers.set("Content-Type", "application/json");
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -303,51 +300,5 @@ export class Response {
 
     output.status_code = this.status_code;
     return output;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-  // FILE MARKER - METHODS - PROTECTED /////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
-  protected getContentType(): string {
-    if (this.options.default_content_type) {
-      return this.options.default_content_type;
-    }
-
-    return this.getContentTypeFromRequestAcceptHeader();
-  }
-
-  /**
-   * Get the content type from the request object's "Accept" header. Default to
-   * the response_output config passed in when the server was created if no
-   * accept header is specified. If no response_output config was passed in
-   * during server creation, then default to application/json.
-   *
-   *
-   * @returns A content type to set as this object's content-type header. If
-   * multiple content types are passed in, then return the first accepted
-   * content type.
-   */
-  protected getContentTypeFromRequestAcceptHeader(): string {
-    const accept = this.request.headers.get("Accept") ||
-      this.request.headers.get("accept");
-    if (accept) {
-      try {
-        let contentTypes = accept.split(";")[0].trim();
-        if (contentTypes && contentTypes === "*/*") {
-          return "application/json";
-        }
-        if (contentTypes.includes(",")) {
-          let firstType = contentTypes.split(",")[0].trim();
-          if (firstType == "*/*") {
-            return "application/json";
-          }
-          return firstType;
-        }
-      } catch (error) {
-        // Do nothing... defaults to returning  application/json below
-      }
-    }
-    return "application/json";
   }
 }
