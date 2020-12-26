@@ -820,11 +820,7 @@ View more information regarding this deprecation/removal at:
    * @returns A response object.
    */
   protected buildResponse(request: Drash.Http.Request): Drash.Http.Response {
-    return new Drash.Http.Response(request, {
-      views_path: this.configs.views_path,
-      template_engine: this.configs.template_engine,
-      default_content_type: this.configs.response_output,
-    });
+    return new Drash.Http.Response(request);
   }
 
   /**
