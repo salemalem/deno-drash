@@ -32,18 +32,17 @@ export class Request extends ServerRequest {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-     * Construct an object of this class.
-     *
-     * @param ServerRequest - originalRequest
-     *     The original Deno ServerRequest object that's used to help create this
-     *     Drash.Http.Request object. There are some data members that the
-     *     original request has that can't be attached to this object. Therefore,
-     *     we keep track of the original request if we ever want to access data
-     *     members from it. An example of a data member that we want to access is
-     *     the original request's body.
-     * @param IOptions - options to be used in the server
-     */
-  constructor(originalRequest: ServerRequest, options?: IOptions) {
+   * Construct an object of this class.
+   *
+   * @param ServerRequest - originalRequest
+   *     The original Deno ServerRequest object that's used to help create this
+   *     Drash.Http.Request object. There are some data members that the
+   *     original request has that can't be attached to this object. Therefore,
+   *     we keep track of the original request if we ever want to access data
+   *     members from it. An example of a data member that we want to access is
+   *     the original request's body.
+   */
+  constructor(originalRequest: ServerRequest) {
     super();
     this.headers = originalRequest.headers;
     this.method = originalRequest.method;
@@ -58,14 +57,50 @@ export class Request extends ServerRequest {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Used to check which headers are accepted.
+   * Checks if the incoming request accepts the type(s) in the parameter.  This
+   * method will check if the requests `Accept` header contains the passed in
+   * types
    *
-   * @param type - It is either a string or an array of strings that contains
-   * the Accept Headers.
-   * @returns Either true or the string of the correct header.
+   * @param request - The request object containing the `Accept` header.
+   * @param type - The content-type/mime-type(s) to check if the request accepts
+   * it.
+   *
+   * @remarks
+   * Below are examples of how this method is called from the request object
+   * and used in resources:
+   *
+   * ```ts
+   * // File: your_resource.ts // assumes the request accepts "text/html"
+   * const val = this.request.accepts("text/html"); // "text/html"
+   *
+   * // or can also pass in an array and will match on the first one found
+   * const val = this.request.accepts(["text/html", "text/xml"]); // "text/html"
+   *
+   * // and will return false if not found
+   * const val = this.request.accepts("text/xml"); // false
+   * ```
+   * @returns False if the request doesn't accept any of the passed in types, or
+   * the content type that was matched.
    */
   public accepts(type: string | string[]): boolean | string {
-    return new Drash.Services.HttpService().accepts(this, type);
+    let acceptHeader = this.headers.get("Accept");
+
+    if (!acceptHeader) {
+      acceptHeader = this.headers.get("accept");
+    }
+
+    if (!acceptHeader) {
+      return false;
+    }
+
+    // For when `type` is a string
+    if (typeof type === "string") {
+      return acceptHeader.indexOf(type) >= 0 ? type : false;
+    }
+
+    // For when `type` is an array
+    const matches = type.filter((t) => acceptHeader!.indexOf(t) >= 0);
+    return matches.length ? matches[0] : false; // return first match
   }
 
   /**
