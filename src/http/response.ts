@@ -1,13 +1,16 @@
 import { Drash } from "../../mod.ts";
 import {
   Cookie,
-  decoder,
   deleteCookie,
   encoder,
   setCookie,
   Status,
   STATUS_TEXT,
 } from "../../deps.ts";
+
+export interface IOptions {
+  default_content_type?: string;
+}
 
 /**
  * Response handles sending a response to the client making the request.
@@ -53,6 +56,18 @@ export class Response {
   //////////////////////////////////////////////////////////////////////////////
   // FILE MARKER - METHODS - PUBLIC ////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * This method allows users to make `this.response.render()` calls in
+   * resources. This method is also used by Tengine:
+   *
+   *   https://github.com/drashland/deno-drash-middleware/tree/master/tengine
+   */
+  public render(
+    ...args: unknown[]
+  ): Promise<boolean | string> | boolean | string {
+    return false;
+  }
 
   /**
    * Create a cookie to be sent in the response. Note: Once set, it cannot be

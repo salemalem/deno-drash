@@ -124,8 +124,6 @@ export class Server {
     this.addResources();
 
     this.addStaticPaths();
-
-    this.addTemplateEngine();
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -692,30 +690,6 @@ View more information regarding this deprecation/removal at:
       }
 
       this.addStaticPath(physicalPath, virtualPath);
-    }
-  }
-
-  /**
-   * Add the template engine passed in via configs.
-   */
-  protected addTemplateEngine(): void {
-    if (!this.configs.template_engine) {
-      return;
-    }
-
-    deprecate(`
-The \`server.template_engine\` config is deprecated and will be removed on January 1, 2021.
-Please update your application to use the following:
-    Tengine - A template engine middleware
-View migration guide at:
-    https://github.com/drashland/deno-drash-middleware/tree/master/tengine
-View more information regarding this deprecation/removal at:
-    https://github.com/drashland/deno-drash/issues/430
-`);
-    if (!this.configs.views_path) {
-      throw new Drash.Exceptions.ConfigsException(
-        "Property missing. The views_path must be defined if template_engine is true",
-      );
     }
   }
 
