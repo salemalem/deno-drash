@@ -4,7 +4,6 @@ import {
   HTTPSOptions,
   IndexService,
   ISearchResult,
-  LoggerService,
   deprecate,
   serve,
   Server as DenoServer,
@@ -644,21 +643,25 @@ export class Server {
     }
 
     deprecate(`
-The \`static_paths\` config is deprecated and will be removed on March 1, 2021.
+The \`static_paths\` config is deprecated and will be removed on April 1, 2021.
+
 Please update your application to use the following:
-    StaticPaths - A static paths middleware
+
+    ServeStatic - A static and virtual paths middleware
+
 View migration guide at:
-    https://github.com/drashland/deno-drash-middleware/tree/master/serve_virtual_paths
+
+    https://github.com/drashland/deno-drash-middleware/tree/master/serve_static
+
 View more information regarding this deprecation/removal at:
+
     https://github.com/drashland/deno-drash/issues/454
 `);
 
-    if (paths) {
-      if (!this.configs.directory) {
-        throw new Drash.Exceptions.ConfigsException(
-          `Static paths are being used, but a directory config was not specified`,
-        );
-      }
+    if (!this.configs.directory) {
+      throw new Drash.Exceptions.ConfigsException(
+        `"static_paths" was specified, but the "directory" config was not specified`,
+      );
     }
 
     // Assume everything in the array is a string
@@ -685,7 +688,7 @@ View more information regarding this deprecation/removal at:
       const physicalPath = paths[virtualPath];
       if (typeof physicalPath != "string") {
         throw new Drash.Exceptions.ConfigsException(
-          `Virtual path must be a string`,
+          `Physical path must be a string`,
         );
       }
 

@@ -13,59 +13,59 @@ export {
   Server,
   ServerRequest,
   serveTLS,
-} from "https://deno.land/std@0.80.0/http/server.ts";
+} from "https://deno.land/std@0.86.0/http/server.ts";
 
 export type {
   HTTPOptions,
   HTTPSOptions,
   Response,
-} from "https://deno.land/std@0.80.0/http/server.ts";
+} from "https://deno.land/std@0.86.0/http/server.ts";
 
 export {
   Status,
   STATUS_TEXT,
-} from "https://deno.land/std@0.80.0/http/http_status.ts";
+} from "https://deno.land/std@0.86.0/http/http_status.ts";
 
-export { BufReader } from "https://deno.land/std@0.80.0/io/bufio.ts";
+export { BufReader } from "https://deno.land/std@0.86.0/io/bufio.ts";
 
-export type { ReadLineResult } from "https://deno.land/std@0.80.0/io/bufio.ts";
+export type { ReadLineResult } from "https://deno.land/std@0.86.0/io/bufio.ts";
 
-export { StringReader } from "https://deno.land/std@0.80.0/io/readers.ts";
+export { StringReader } from "https://deno.land/std@0.86.0/io/readers.ts";
 
 export {
   MultipartReader,
-} from "https://deno.land/std@0.80.0/mime/multipart.ts";
+} from "https://deno.land/std@0.86.0/mime/multipart.ts";
 
 export type {
   FormFile,
   MultipartFormData,
-} from "https://deno.land/std@0.80.0/mime/multipart.ts";
+} from "https://deno.land/std@0.86.0/mime/multipart.ts";
 
 export {
   deleteCookie,
   getCookies,
   setCookie,
-} from "https://deno.land/std@0.80.0/http/cookie.ts";
-export type { Cookie } from "https://deno.land/std@0.80.0/http/cookie.ts";
+} from "https://deno.land/std@0.86.0/http/cookie.ts";
+export type { Cookie } from "https://deno.land/std@0.86.0/http/cookie.ts";
 
-export { green, red } from "https://deno.land/std@0.80.0/fmt/colors.ts";
+export { green, red } from "https://deno.land/std@0.86.0/fmt/colors.ts";
 
 export {
   IndexService,
-} from "https://raw.githubusercontent.com/drashland/services/v0.0.1/index/index_service.ts";
+} from "https://raw.githubusercontent.com/drashland/services/v0.1.0/index/index_service.ts";
 export type {
   ISearchResult,
-} from "https://raw.githubusercontent.com/drashland/services/v0.0.1/index/index_service.ts";
+} from "https://raw.githubusercontent.com/drashland/services/v0.1.0/index/index_service.ts";
 // export {
 //   IndexService,
 //   ISearchResult,
 // } from "../services/index/index_service.ts";
 
-export { BumperService } from "https://raw.githubusercontent.com/drashland/services/v0.0.1/ci/bumper_service.ts";
+export { BumperService } from "https://raw.githubusercontent.com/drashland/services/v0.1.0/ci/bumper_service.ts";
 
-import { LoggerService } from "https://raw.githubusercontent.com/drashland/services/v0.0.1/logger/logger_service.ts";
-export { LoggerService };
+import { ConsoleLogger } from "https://raw.githubusercontent.com/drashland/services/v0.1.0/logger/console_logger.ts";
+export { ConsoleLogger };
 
 export function deprecate(message: string): void {
-  LoggerService.logWarn("DEPRECATED CODE DETECTED\n" + message);
+  ConsoleLogger.warn("DEPRECATED CODE DETECTED\n" + message);
 }
