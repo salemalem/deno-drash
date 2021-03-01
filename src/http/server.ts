@@ -1,10 +1,10 @@
 import { Drash } from "../../mod.ts";
 import {
+  ConsoleLogger,
   HTTPOptions,
   HTTPSOptions,
   IndexService,
   ISearchResult,
-  deprecate,
   serve,
   Server as DenoServer,
   ServerRequest,
@@ -12,6 +12,10 @@ import {
 } from "../../deps.ts";
 import type { ServerMiddleware } from "../interfaces/server_middleware.ts";
 import { IOptions as IRequestOptions } from "./request.ts";
+
+function deprecate(message: string): void {
+  ConsoleLogger.warn("DEPRECATED CODE DETECTED\n" + message);
+}
 
 interface IServices {
   http_service: Drash.Services.HttpService;
