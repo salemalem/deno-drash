@@ -189,9 +189,9 @@ export class Server implements Drash.Interfaces.IServer {
   /**
    * Run the server in HTTP mode.
    *
-   * @returns The Deno server object.
+   * @returns This server.
    */
-  public async runHttp(): Promise<Drash.Deps.Server> {
+  public async runHttp(): Promise<this> {
     this.options.protocol = "http";
 
     this.#deno_server = Drash.Deps.serve({
@@ -201,15 +201,15 @@ export class Server implements Drash.Interfaces.IServer {
 
     await this.listenForRequests();
 
-    return this.#deno_server;
+    return this;
   }
 
   /**
    * Run the server in HTTPS mode.
    *
-   * @returns The Deno server object.
+   * @returns This server.
    */
-  public async runHttps(): Promise<Drash.Deps.Server> {
+  public async runHttps(): Promise<this> {
     this.options.protocol = "https";
 
     this.#deno_server = Drash.Deps.serveTLS({
@@ -221,7 +221,7 @@ export class Server implements Drash.Interfaces.IServer {
 
     await this.listenForRequests();
 
-    return this.#deno_server;
+    return this;
   }
 
   //////////////////////////////////////////////////////////////////////////////

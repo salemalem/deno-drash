@@ -59,7 +59,7 @@ const DRASH_ERROR_CODES: { [k: string]: string } = {
   "D1002": "Request options require 'original' property.",
   // This means we forgot to pass in the `server` property when building the
   // request in `server.handleRequest()`.
-  "D1003": "Request options require 'server' proeprty.",
+  "D1003": "Request options require 'server' property.",
   // This means there is an issue with the way we are parsing the Content-Type
   // header when trying to read request bodies as multipart/form-data. The issue
   // could be that the request object isn't properly handled or it was changed

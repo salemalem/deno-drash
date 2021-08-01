@@ -54,10 +54,12 @@ export type TRequestBody =
   | undefined;
 
 export type TRequestParams =
-  | URLSearchParams
   | Drash.Types.TRequestBody
+  | Headers
+  | URLSearchParams
   | {
     body: TRequestBody,
+    headers: Headers,
     path: URLSearchParams,
     query: URLSearchParams,
   }

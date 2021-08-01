@@ -120,7 +120,7 @@ export class Request {
    *
    * @returns True if yes, false if no.
    */
-  public accepts(contentTypes: string[]): boolean {
+  public accepts(contentTypes: string | string[]): boolean {
     let acceptHeader = this.#original.headers.get("Accept");
 
     if (!acceptHeader) {
@@ -131,7 +131,11 @@ export class Request {
       return false;
     }
 
-    const matches = contentTypes.filter((contentType) => {
+    const contentTypesArray = Array.isArray(contentTypes)
+      ? contentTypes
+      : [contentTypes];
+
+    const matches = contentTypesArray.filter((contentType) => {
       return acceptHeader!.includes(contentType);
     });
 
@@ -165,10 +169,11 @@ export class Request {
    * specified, then all of the params will be returned.
    */
   public params(
-    type: "body" | "path" | "query" | undefined = undefined
+    type: "headers" | "body" | "path" | "query" | undefined = undefined
   ): Drash.Types.TRequestParams {
     if (!type) {
       return {
+        headers: this.headers,
         body: this.#parsed_body,
         path: new URLSearchParams(this.#resource.path_parameters),
         query: new URLSearchParams(this.url.parameters),
@@ -178,6 +183,8 @@ export class Request {
     switch(type) {
       case "body":
         return this.#parsed_body;
+      case "headers":
+        return this.headers;
       case "path":
         return new URLSearchParams(this.#resource.path_parameters);
       case "query":
@@ -208,27 +215,38 @@ export class Request {
     // No Content-Type header? Default to parsing the request body as
     // aplication/x-www-form-urlencoded.
     if (!contentType) {
-      this.#parsed_body = await this.parseBodyAsFormUrlEncoded(true);
+      this.#parsed_body = await this.#parseBodyAsFormUrlEncoded(true);
       return;
     }
 
     if (contentType.includes("multipart/form-data")) {
-      this.#parsed_body = await this.parseBodyAsMultipartFormData(
+      this.#parsed_body = await this.#parseBodyAsMultipartFormData(
         contentType,
       );
       return;
     }
 
     if (contentType.includes("application/json")) {
-      this.#parsed_body = await this.parseBodyAsJson();
+      this.#parsed_body = await this.#parseBodyAsJson();
       return;
     }
 
     if (contentType.includes("application/x-www-form-urlencoded")) {
-      this.#parsed_body = await this.parseBodyAsFormUrlEncoded();
+      this.#parsed_body = await this.#parseBodyAsFormUrlEncoded();
       return;
     }
   }
+
+  /**
+   * Set the resource that is associated with this request on this request.
+   */
+  public setResource(resource: Drash.Resource): void {
+    this.#resource = resource;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // FILE MARKER - METHODS - PRIVATE ///////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * Parse the original request's body as application/x-www-form-url-encoded.
@@ -236,7 +254,7 @@ export class Request {
    * @returns A `Promise` of an empty object if no body exists, else a key/value
    * pair array (e.g., `returnValue['someKey']`).
    */
-  public async parseBodyAsFormUrlEncoded(
+  async #parseBodyAsFormUrlEncoded(
     parseByDefault: boolean = false,
   ): Promise<Drash.Interfaces.IKeyValuePairs<unknown>> {
     try {
@@ -272,7 +290,7 @@ export class Request {
    *
    * @returns A `Promise` of a JSON object decoded from request body.
    */
-  public async parseBodyAsJson(): Promise<{ [key: string]: unknown }> {
+  async #parseBodyAsJson(): Promise<{ [key: string]: unknown }> {
     try {
       let data = Drash.Deps.decoder.decode(
         await Deno.readAll(this.#original.body),
@@ -303,7 +321,7 @@ export class Request {
    *
    * @return A Promise<MultipartFormData>.
    */
-  public async parseBodyAsMultipartFormData(
+  async #parseBodyAsMultipartFormData(
     contentType: string,
   ): Promise<Drash.Deps.MultipartFormData> {
     let boundary: null | string = null;
@@ -332,17 +350,6 @@ export class Request {
       throw new Drash.Errors.DrashError("D1005");
     }
   }
-
-  /**
-   * Set the resource that is associated with this request on this request.
-   */
-  public setResource(resource: Drash.Resource): void {
-    this.#resource = resource;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-  // FILE MARKER - METHODS - PRIVATE ///////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * Validate the options and set them on this object.

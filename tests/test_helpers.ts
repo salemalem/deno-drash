@@ -12,37 +12,26 @@ interface IMakeRequestOptions {
 export function createRequest(original: ServerRequest): Drash.Request {
   return Drash.Factory.create(Drash.Request, {
     original,
+    server: Drash.createServer(),
   });
 }
 
-export async function runServer(server: Drash.Server, configs: {
-  hostname?: string;
-  port: number;
-} = {
+export function runServer(options: Drash.Interfaces.IServerOptions = {
   hostname: "localhost",
   port: 3000,
 }) {
-  await server.run({
-    hostname: configs.hostname,
-    port: configs.port,
-  });
+  const server = Drash.createServer(options);
+  return server.runHttp();
 }
 
-export async function runServerTLS(server: Drash.Server, configs: {
-  hostname?: string;
-  port: number;
-  certFile?: string;
-  keyFile?: string;
-} = {
+export function runServerHttps(options: Drash.Interfaces.IServerOptions  = {
   hostname: "localhost",
   port: 1448,
+  cert_file: "./tests/integration/app_3002_https/tls/localhost.crt",
+  key_file: "./tests/integration/app_3002_https/tls/localhost.key",
 }) {
-  return await server.runTLS({
-    hostname: configs.hostname,
-    port: configs.port,
-    certFile: "./tests/integration/app_3002_https/tls/localhost.crt",
-    keyFile: "./tests/integration/app_3002_https/tls/localhost.key",
-  });
+  const server = Drash.createServer(options)
+  return server.runHttps();
 }
 
 /**
@@ -90,16 +79,12 @@ export function mockRequest(url = "/", method = "get", options?: any): any {
   //
   //   TypeError: Cannot read property 'write' of undefined
   //
-  request.respond = function respond(output: Drash.Interfaces.IResponseOutput) {
-    output.send = function () {
-      if (
-        output.status === 301 ||
-        output.status === 302
-      ) {
-        return output;
-      }
-    };
-    return output;
+  request.respond = function respond(output: {
+    body: Drash.Types.TResponseBody,
+    status: number,
+    headers: Headers,
+  }) {
+    return output.body;
   };
 
   return request;
@@ -153,7 +138,3 @@ export const makeRequest = {
     return fetch(url, options);
   },
 };
-
-export function responseBody(response: Drash.Interfaces.IResponseOutput) {
-  return decoder.decode(response.body as ArrayBuffer);
-}
