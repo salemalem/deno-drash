@@ -9,6 +9,12 @@ interface IMakeRequestOptions {
   credentials?: any;
 }
 
+export function createRequest(original: ServerRequest): Drash.Request {
+  return Drash.Factory.create(Drash.Request, {
+    original,
+  });
+}
+
 export async function runServer(server: Drash.Server, configs: {
   hostname?: string;
   port: number;

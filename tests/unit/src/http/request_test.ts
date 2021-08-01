@@ -5,7 +5,7 @@ import {
   path,
   Rhum,
   TestHelpers,
-} from "../../../../deps.ts";
+} from "../../../deps.ts";
 const encoder = new TextEncoder();
 
 // Taken  from https://github.com/denoland/deno/blob/2da084058397efd6f517ba98c9882760ec0a7bd6/cli/tests/unit/fetch_test.ts#L261
@@ -128,10 +128,6 @@ Rhum.testPlan("http/request_test.ts", () => {
   Rhum.testSuite("parseBodyAsMultipartFormData()", async () => {
     parseBodyAsMultipartFormDataTests();
   });
-
-  Rhum.testSuite("setHeaders()", async () => {
-    setHeadersTests();
-  });
 });
 
 Rhum.run();
@@ -149,7 +145,7 @@ function acceptsTests() {
           Accept: "application/json;text/html",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       let actual;
       actual = request.accepts("application/json");
       Rhum.asserts.assertEquals("application/json", actual);
@@ -165,7 +161,7 @@ function acceptsTests() {
           Accept: "application/json;text/html",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       let actual;
       actual = request.accepts("text/xml");
       Rhum.asserts.assertEquals(false, actual);
@@ -179,7 +175,7 @@ function acceptsTests() {
           Accept: "application/json;text/html",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       let actual;
       actual = request.accepts(["application/json", "text/xml"]);
       Rhum.asserts.assertEquals("application/json", actual);
@@ -193,7 +189,7 @@ function acceptsTests() {
           Accept: "application/json;text/html",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       let actual;
       actual = request.accepts(["text/xml", "application/json"]);
       Rhum.asserts.assertEquals("application/json", actual);
@@ -207,7 +203,7 @@ function acceptsTests() {
           Accept: "application/json;text/html",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       let actual;
       actual = request.accepts(["text/xml", "text/plain"]);
       Rhum.asserts.assertEquals(false, actual);
@@ -224,7 +220,7 @@ function getCookieTests() {
         credentials: "include",
       },
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const cookieValue = request.getCookie("test_cookie");
     Rhum.asserts.assertEquals(cookieValue, "test_cookie_value");
   });
@@ -236,7 +232,7 @@ function getCookieTests() {
         credentials: "include",
       },
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const cookieValue = request.getCookie("cookie_doesnt_exist");
     Rhum.asserts.assertEquals(cookieValue, undefined);
   });
@@ -246,7 +242,7 @@ function getBodyFileTests() {
   // Reason: `this.request.getBodyParam()` didn't work for multipart/form-data requests
   Rhum.testCase("Returns the file object if the file exists", async () => {
     const serverRequest = TestHelpers.mockRequest();
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const o = await Deno.open(path.resolve("./tests/data/sample_1.txt"));
     const form = await request.parseBodyAsMultipartFormData(
       o,
@@ -274,7 +270,7 @@ function getBodyFileTests() {
 
   Rhum.testCase("Returns undefined if the file does not exist", async () => {
     const serverRequest = TestHelpers.mockRequest();
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const o = await Deno.open(path.resolve("./tests/data/sample_1.txt"));
     const form = await request.parseBodyAsMultipartFormData(
       o,
@@ -306,7 +302,7 @@ function getBodyParamTests() {
         },
         body: reader,
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       const actual = request.getBodyParam("hello");
       Rhum.asserts.assertEquals("world", actual);
@@ -323,7 +319,7 @@ function getBodyParamTests() {
       },
       body: reader,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     await request.parseBody();
     const actual = request.getBodyParam("dont_exist");
     Rhum.asserts.assertEquals(null, actual);
@@ -334,12 +330,10 @@ function getBodyParamTests() {
     "Returns the value for the parameter when it exists and request is multipart/form-data",
     async () => {
       const serverRequest = TestHelpers.mockRequest();
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const o = await Deno.open(path.resolve("./tests/data/sample_1.txt"));
       const form = await request.parseBodyAsMultipartFormData(
-        o,
         "--------------------------434049563556637648550474",
-        128,
       );
       const pb: Drash.Interfaces.IParsedRequestBody = {
         content_type: "multipart/form-data",
@@ -365,7 +359,7 @@ function getBodyParamTests() {
       },
       body: reader,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     await request.parseBody();
     const actual = request.getBodyParam("user");
     Rhum.asserts.assertEquals({
@@ -386,7 +380,7 @@ function getBodyParamTests() {
       },
       body: reader,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     await request.parseBody();
     const actual = request.getBodyParam("usernames");
     Rhum.asserts.assertEquals(
@@ -407,7 +401,7 @@ function getBodyParamTests() {
       },
       body: reader,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     await request.parseBody();
     const actual = request.getBodyParam("authenticated");
     Rhum.asserts.assertEquals(actual, false);
@@ -425,7 +419,7 @@ function getAllHeaderParamsTests() {
           hello: "world",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const actual = request.getAllHeaderParams();
       Rhum.asserts.assertEquals(actual, {
         hello: "world",
@@ -451,7 +445,7 @@ function getAllBodyParamsTests() {
         },
         body: reader,
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       const actual = request.getAllBodyParams();
       Rhum.asserts.assertEquals(actual, {
@@ -474,7 +468,7 @@ function getAllPathParamsTests() {
         param_2: "name",
       };
       const serverRequest = TestHelpers.mockRequest("/user/name", "get");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       request.path_params = expected;
       const actual = request.getAllPathParams();
       Rhum.asserts.assertEquals(actual, expected);
@@ -491,7 +485,7 @@ function getHeaderParamTests() {
           hello: "world",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       const actual = request.getHeaderParam("hello");
       Rhum.asserts.assertEquals("world", actual);
@@ -506,7 +500,7 @@ function getHeaderParamTests() {
           hello: "world",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       const actual = request.getHeaderParam("dont-exist");
       Rhum.asserts.assertEquals(null, actual);
@@ -519,7 +513,7 @@ function getPathParamTests() {
     "Returns the value for the header param when it exists",
     async () => {
       const serverRequest = TestHelpers.mockRequest();
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       request.path_params = {
         hello: "world",
@@ -533,7 +527,7 @@ function getPathParamTests() {
     "Returns null when the header data doesn't exist",
     async () => {
       const serverRequest = TestHelpers.mockRequest();
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       request.path_params = {
         hello: "world",
@@ -549,7 +543,7 @@ function getUrlQueryParamTests() {
     "Returns the value for the query param when it exists",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/?hello=world");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       const actual = request.getUrlQueryParam("hello");
       Rhum.asserts.assertEquals("world", actual);
@@ -560,7 +554,7 @@ function getUrlQueryParamTests() {
     "Returns null when the query data doesn't exist",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/?hello=world");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       await request.parseBody();
       const actual = request.getUrlQueryParam("dont_exist");
       Rhum.asserts.assertEquals(null, actual);
@@ -571,14 +565,14 @@ function getUrlQueryParamTests() {
 function getUrlPathTests() {
   Rhum.testCase("Returns / when Url is /", async () => {
     const serverRequest = TestHelpers.mockRequest("/");
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const url = request.getUrlPath(request);
     Rhum.asserts.assertEquals("/", url);
   });
 
   Rhum.testCase("Returns the path when it contains no queries", async () => {
     const serverRequest = TestHelpers.mockRequest("/api/v2/users");
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const url = request.getUrlPath(request);
     Rhum.asserts.assertEquals("/api/v2/users", url);
   });
@@ -589,7 +583,7 @@ function getUrlPathTests() {
       const serverRequest = TestHelpers.mockRequest(
         "/company/users?name=John&age=44",
       );
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const url = request.getUrlPath(request);
       Rhum.asserts.assertEquals("/company/users", url);
     },
@@ -599,7 +593,7 @@ function getUrlPathTests() {
 function getAllUrlQueryParamsTests() {
   Rhum.testCase("Returns {} with no query strings", async () => {
     const serverRequest = TestHelpers.mockRequest("/");
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const queryParams = request.getAllUrlQueryParams();
     Rhum.asserts.assertEquals(queryParams, {});
   });
@@ -610,7 +604,7 @@ function getAllUrlQueryParamsTests() {
       const serverRequest = TestHelpers.mockRequest(
         "/api/v2/users?name=John&age=44",
       );
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const queryParams = request.getAllUrlQueryParams();
       Rhum.asserts.assertEquals(queryParams, {
         name: "John",
@@ -623,7 +617,7 @@ function getAllUrlQueryParamsTests() {
 function getUrlQueryStringTests() {
   Rhum.testCase("Returns null with no query strings", async () => {
     const serverRequest = TestHelpers.mockRequest("/");
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const queryString = request.getUrlQueryString();
     Rhum.asserts.assertEquals(queryString, null);
   });
@@ -632,7 +626,7 @@ function getUrlQueryStringTests() {
     const serverRequest = TestHelpers.mockRequest(
       "/api/v2/users?name=John&age=44",
     );
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const queryString = request.getUrlQueryString();
     Rhum.asserts.assertEquals(queryString, "name=John&age=44");
   });
@@ -641,7 +635,7 @@ function getUrlQueryStringTests() {
     "Returns nothing when failure to get the querystring",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/api/v2/users?");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const queryString = request.getUrlQueryString();
       Rhum.asserts.assertEquals(queryString, "");
     },
@@ -657,7 +651,7 @@ function hasBodyTests() {
           "content-length": 52,
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const hasBody = await request.hasBody();
       Rhum.asserts.assertEquals(hasBody, true);
     },
@@ -671,7 +665,7 @@ function hasBodyTests() {
           "Content-Length": 52,
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const hasBody = await request.hasBody();
       Rhum.asserts.assertEquals(hasBody, true);
     },
@@ -681,7 +675,7 @@ function hasBodyTests() {
     "Returns false when content-length is not in the header",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/", "get");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const hasBody = await request.hasBody();
       Rhum.asserts.assertEquals(hasBody, false);
     },
@@ -695,7 +689,7 @@ function hasBodyTests() {
           "content-length": "yes",
         },
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const hasBody = await request.hasBody();
       Rhum.asserts.assertEquals(hasBody, false);
     },
@@ -707,7 +701,7 @@ function parseBodyTests() {
     "Returns the default object when request has no body",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const ret = await request.parseBody();
       Rhum.asserts.assertEquals(ret, {
         content_type: "",
@@ -724,7 +718,7 @@ function parseBodyTests() {
       const serverRequest = TestHelpers.mockRequest("/", "get", {
         body: reader,
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const ret = await request.parseBody();
       Rhum.asserts.assertEquals(ret, {
         content_type: "application/x-www-form-urlencoded",
@@ -740,7 +734,7 @@ function parseBodyTests() {
   //   // Need to set the body of the original request for parseBody to work when it calls parseBodyAsMultipartFormData
   //   const o = await Deno.open(path.resolve("./tests/data/sample_1.txt"));
   //   const boundary = "--------------------------434049563556637648550474";
-  //   const formOne = await new Drash.Request(TestHelpers.mockRequest())
+  //   const formOne = await TestHelpers.createRequest(serverRequest)ckRequest())
   //     .parseBodyAsMultipartFormData( // method 1
   //       o,
   //       boundary,
@@ -758,7 +752,7 @@ function parseBodyTests() {
   //   let originalRequest = TestHelpers.mockRequest("/orig", "post", {
   //     body: o,
   //   });
-  //   const newRequest = new Drash.Request(originalRequest);
+  //   const newRequest = TestHelpers.createRequest(serverRequest)t);
   //   newRequest.headers.set(
   //     "Content-Type",
   //     "multipart/form-data; boundary=" + boundary,
@@ -790,8 +784,7 @@ function parseBodyTests() {
     "Returns the default object when no boundary was found on multipart/form-data",
     async () => {
       const request = TestHelpers.mockRequest("/orig", "post");
-      const newRequest = new Drash.Request(request);
-      newRequest.headers.set("Content-Type", "multipart/form-data"); // Needed since the method gets boundary from header
+      const newRequest = TestHelpers.createRequest(serverRequest)      newRequest.headers.set("Content-Type", "multipart/form-data"); // Needed since the method gets boundary from header
       newRequest.headers.set("Content-Length", "883"); // Tells parseBody that this request has a body
       const result = await newRequest.parseBody();
       Rhum.asserts.assertEquals(result, {
@@ -807,8 +800,7 @@ function parseBodyTests() {
       const request = TestHelpers.mockRequest("/orig", "post", {
         body: JSON.stringify({ name: "John" }),
       });
-      const newRequest = new Drash.Request(request);
-      newRequest.headers.set(
+      const newRequest = TestHelpers.createRequest(serverRequest)      newRequest.headers.set(
         "Content-Type",
         "multipart/form-data; boundary=--------------------------434049563556637648550474",
       ); // Needed since the method gets boundary from header
@@ -840,7 +832,7 @@ function parseBodyTests() {
       },
       body: body,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const ret = await request.parseBody();
     Rhum.asserts.assertEquals(ret, {
       content_type: "application/json",
@@ -861,7 +853,7 @@ function parseBodyTests() {
             name: "John",
           }),
         });
-        const request = new Drash.Request(serverRequest);
+        const request = TestHelpers.createRequest(serverRequest);
         const ret = await request.parseBody();
         Rhum.asserts.assertEquals(ret, {
           content_type: "application/json",
@@ -885,7 +877,7 @@ function parseBodyTests() {
         },
         body: reader,
       });
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const ret = await request.parseBody();
       Rhum.asserts.assertEquals(ret, {
         content_type: "application/x-www-form-urlencoded",
@@ -904,7 +896,7 @@ function parseBodyAsFormUrlEncodedTests() {
     const serverRequest = TestHelpers.mockRequest("/", "get", {
       body: reader,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const actual = await request.parseBodyAsFormUrlEncoded();
     Rhum.asserts.assertEquals(actual, { hello: "world" });
   });
@@ -913,7 +905,7 @@ function parseBodyAsFormUrlEncodedTests() {
     "Returns an empty object if request has no body",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/", "get");
-      const request = new Drash.Request(serverRequest);
+      const request = TestHelpers.createRequest(serverRequest);
       const actual = await request.parseBodyAsFormUrlEncoded();
       Rhum.asserts.assertEquals(actual, {});
     },
@@ -932,7 +924,7 @@ function parseBodyAsJsonTests() {
       },
       body: reader,
     });
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const actual = await request.parseBodyAsJson();
     Rhum.asserts.assertEquals(actual, { hello: "world" });
   });
@@ -941,22 +933,20 @@ function parseBodyAsJsonTests() {
 function parseBodyAsMultipartFormDataTests() {
   Rhum.testCase("Can parse file sample_1.txt", async () => {
     const serverRequest = TestHelpers.mockRequest();
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const o = await Deno.open(path.resolve("./tests/data/sample_1.txt"));
     const form = await request.parseBodyAsMultipartFormData(
-      o,
-      "--------------------------434049563556637648550474",
-      128,
+      "content-type=application/octet-stream;boundary=--------------------------434049563556637648550474",
     );
-    Rhum.asserts.assertEquals(form.value("foo"), "foo");
-    Rhum.asserts.assertEquals(form.value("bar"), "bar");
-    let file = form.file("file");
+    Rhum.asserts.assertEquals(form.values("foo"), "foo");
+    Rhum.asserts.assertEquals(form.values("bar"), "bar");
+    let file = form.files("file");
     if (Array.isArray(file)) {
       file = file[0];
     }
     Rhum.asserts.assert(isFormFile(file));
     Rhum.asserts.assert(file!.content !== void 0);
-    let file2 = form.file("file2");
+    let file2 = form.files("file2");
     if (Array.isArray(file2)) {
       file2 = file2[0];
     }
@@ -967,43 +957,22 @@ function parseBodyAsMultipartFormDataTests() {
   });
   Rhum.testCase("Can parse file sample_2.txt", async () => {
     const serverRequest = TestHelpers.mockRequest();
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const o = await Deno.open(path.resolve("./tests/data/sample_2.txt"));
     const form = await request.parseBodyAsMultipartFormData(
-      o,
-      "--------------------------434049563556637648550474",
-      128,
+      "content-type=application/octet-stream;boundary=--------------------------434049563556637648550474",
     );
-    Rhum.asserts.assertEquals(form.value("hello"), "world");
+    Rhum.asserts.assertEquals(form.values("hello"), "world");
     o.close();
   });
   Rhum.testCase("Can parse file sample_3.txt", async () => {
     const serverRequest = TestHelpers.mockRequest();
-    const request = new Drash.Request(serverRequest);
+    const request = TestHelpers.createRequest(serverRequest);
     const o = await Deno.open(path.resolve("./tests/data/sample_3.txt"));
     const form = await request.parseBodyAsMultipartFormData(
-      o,
-      "--------------------------434049563556637648550474",
-      128,
+      "content-type=application/octet-stream;boundary=--------------------------434049563556637648550474",
     );
-    Rhum.asserts.assertEquals(form.value("foo"), "foo");
+    Rhum.asserts.assertEquals(form.values("foo"), "foo");
     o.close();
-  });
-}
-
-function setHeadersTests() {
-  Rhum.testCase("Attaches headers to the request object", async () => {
-    const serverRequest = TestHelpers.mockRequest("/", "get");
-    const headers = {
-      "Content-Type": "application/json",
-      "hello": "world",
-    };
-    const request = new Drash.Request(serverRequest);
-    request.setHeaders(headers);
-    Rhum.asserts.assertEquals(request.headers.get("hello"), "world");
-    Rhum.asserts.assertEquals(
-      request.headers.get("Content-Type"),
-      "application/json",
-    );
   });
 }

@@ -34,6 +34,10 @@ export class Request {
     return this.#original.body;
   }
 
+  get headers(): Headers {
+    return this.#original.headers;
+  }
+
   /**
    * Does the ORIGINAL request have a body?
    */
