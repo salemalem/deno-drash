@@ -4,7 +4,7 @@ import * as Drash from "../../mod.ts";
 export class Request {
   #options!: Drash.Interfaces.IRequestOptions;
   #original!: Drash.Deps.ServerRequest;
-  #parsed_body?: Drash.Types.TRequestBody;
+  #parsed_body: {[key: string]: unknown | string}= {};
   #path_parameters!: string;
   #resource!: Drash.Resource;
   #server!: Drash.Server;
@@ -30,8 +30,8 @@ export class Request {
   /**
    * Get the ORIGINAL request's body.
    */
-  get body(): Deno.Reader {
-    return this.#original.body;
+  get body(): {[key: string]: unknown} {
+    return this.#parsed_body;
   }
 
   get headers(): Headers {
@@ -168,30 +168,28 @@ export class Request {
    * @param type - (optional) The type of params to return. If no type is
    * specified, then all of the params will be returned.
    */
-  public params(
-    type: "headers" | "body" | "path" | "query" | undefined = undefined
-  ): Drash.Types.TRequestParams {
-    if (!type) {
-      return {
-        headers: this.headers,
-        body: this.#parsed_body,
-        path: new URLSearchParams(this.#resource.path_parameters),
-        query: new URLSearchParams(this.url.parameters),
-      };
-    }
+  get params(): Drash.Types.TRequestParams {
+    return {
+      headers: this.headers,
+      body: this.#parsed_body,
+      path: new URLSearchParams(this.#resource.path_parameters),
+      query: new URLSearchParams(this.url.parameters),
+    };
 
-    switch(type) {
-      case "body":
-        return this.#parsed_body;
-      case "headers":
-        return this.headers;
-      case "path":
-        return new URLSearchParams(this.#resource.path_parameters);
-      case "query":
-        return new URLSearchParams(this.url.parameters);
-      default:
-        break;
-    }
+    // switch(type) {
+    //   case "body":
+    //     return this.#parsed_body;
+    //   case "headers":
+    //     return this.headers;
+    //   case "path":
+    //     return new URLSearchParams(this.#resource.path_parameters);
+    //   case "query":
+    //     return new URLSearchParams(this.url.parameters);
+    //   default:
+    //     break;
+    // }
+
+    // return this.#parsed_body;
   }
 
   /**
@@ -256,7 +254,7 @@ export class Request {
    */
   async #parseBodyAsFormUrlEncoded(
     parseByDefault: boolean = false,
-  ): Promise<Drash.Interfaces.IKeyValuePairs<unknown>> {
+  ): Promise<{[key: string]: string}> {
     try {
       let body = Drash.Deps.decoder.decode(
         await Deno.readAll(this.#original.body),
@@ -266,9 +264,13 @@ export class Request {
         body = body.split("?")[1];
       }
 
-      body = body.replace(/\"/g, "");
+      const params = new URLSearchParams(body.replace(/\"/g, ""));
+      const ret: {[key: string]: string} = {};
+      params.forEach((value: string, key: string) => {
+        ret[key] = value;
+      });
 
-      return {};
+      return ret;
     } catch (error) {
       if (parseByDefault) {
         throw new Drash.Errors.HttpError(
@@ -290,7 +292,7 @@ export class Request {
    *
    * @returns A `Promise` of a JSON object decoded from request body.
    */
-  async #parseBodyAsJson(): Promise<{ [key: string]: unknown }> {
+  async #parseBodyAsJson(): Promise<{[key: string]: unknown}> {
     try {
       let data = Drash.Deps.decoder.decode(
         await Deno.readAll(this.#original.body),
@@ -323,7 +325,7 @@ export class Request {
    */
   async #parseBodyAsMultipartFormData(
     contentType: string,
-  ): Promise<Drash.Deps.MultipartFormData> {
+  ): Promise<{[key: string]: Drash.Deps.MultipartFormData}> {
     let boundary: null | string = null;
 
     // Special thanks to https://github.com/artisonian for helping parse the
@@ -345,7 +347,7 @@ export class Request {
 
     try {
       const mr = new Drash.Deps.MultipartReader(this.#original.body, boundary);
-      return await mr.readForm(maxMemory);
+      return {form_data: await mr.readForm(maxMemory)};
     } catch (error) {
       throw new Drash.Errors.DrashError("D1005");
     }

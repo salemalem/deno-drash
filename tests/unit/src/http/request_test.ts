@@ -242,15 +242,12 @@ function hasBodyTests() {
 
 function parseBodyTests() {
   Rhum.testCase(
-    "Returns the default object when request has no body",
+    "Returns an empty object if the request does not have a body",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/");
       const request = TestHelpers.createRequest(serverRequest);
-      const ret = await request.parseBody();
-      Rhum.asserts.assertEquals(ret, {
-        content_type: "",
-        data: undefined,
-      });
+      await request.parseBody();
+      Rhum.asserts.assertEquals(request.body, {});
     },
   );
 
@@ -263,28 +260,28 @@ function parseBodyTests() {
         body: reader,
       });
       const request = TestHelpers.createRequest(serverRequest);
-      const ret = await request.parseBody();
-      Rhum.asserts.assertEquals(ret, {
-        content_type: "application/x-www-form-urlencoded",
-        data: {
-          hello: "world",
-        },
-      });
+      await request.parseBody();
+      Rhum.asserts.assertEquals(request.body.hello, "world");
     },
   );
 
   Rhum.testCase(
-    "Returns the default object when no boundary was found on multipart/form-data",
+    "Throws an error when no boundary was found on multipart/form-data Content-Type header",
     async () => {
       const serverRequest = TestHelpers.mockRequest("/orig", "post");
       const newRequest = TestHelpers.createRequest(serverRequest);
-      newRequest.headers.set("Content-Type", "multipart/form-data"); // Needed since the method gets boundary from header
-      newRequest.headers.set("Content-Length", "883"); // Tells parseBody that this request has a body
-      const result = await newRequest.parseBody();
-      Rhum.asserts.assertEquals(result, {
-        content_type: "",
-        data: undefined,
-      });
+      // Needed since the method gets boundary from header
+      newRequest.headers.set("Content-Type", "multipart/form-data");
+      // Tell parseBody that this request has a body
+      newRequest.headers.set("Content-Length", "883");
+      try {
+        await newRequest.parseBody();
+      } catch (error) {
+        Rhum.asserts.assertEquals(
+          error.message,
+          "[D1004] Error trying to find boundary in Content-Type header."
+        );
+      }
     },
   );
 
@@ -311,7 +308,7 @@ function parseBodyTests() {
       Rhum.asserts.assertEquals(hasErrored, true);
       Rhum.asserts.assertEquals(
         errorMessage,
-        "Error reading request body as multipart/form-data.",
+        "[D1005] Error reading request body as multipart/form-data.",
       );
     },
   );
@@ -328,10 +325,9 @@ function parseBodyTests() {
       body: body,
     });
     const request = TestHelpers.createRequest(serverRequest);
-    const ret = await request.parseBody();
-    Rhum.asserts.assertEquals(ret, {
-      content_type: "application/json",
-      data: { name: "John" },
+    await request.parseBody();
+    Rhum.asserts.assertEquals(request.body, {
+      name: "John"
     });
   });
 
@@ -349,10 +345,9 @@ function parseBodyTests() {
           }),
         });
         const request = TestHelpers.createRequest(serverRequest);
-        const ret = await request.parseBody();
-        Rhum.asserts.assertEquals(ret, {
-          content_type: "application/json",
-          data: { name: "John" },
+        await request.parseBody();
+        Rhum.asserts.assertEquals(request.body, {
+          name: "John"
         });
       } catch (err) {
         errorThrown = true;
@@ -373,13 +368,8 @@ function parseBodyTests() {
         body: reader,
       });
       const request = TestHelpers.createRequest(serverRequest);
-      const ret = await request.parseBody();
-      Rhum.asserts.assertEquals(ret, {
-        content_type: "application/x-www-form-urlencoded",
-        data: {
-          hello: "world",
-        },
-      });
+      await request.parseBody();
+      Rhum.asserts.assertEquals(request.body, {hello: "world" });
     },
   );
 }
